@@ -1,0 +1,66 @@
+.clickable {
+    cursor: pointer;
+    min-height: 200px;
+}
+
+.innerText {
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.thumbTitle {
+    font-size: medium;
+    line-height: 30px;
+    margin: auto;
+    font-weight: 600;
+    text-align: center;
+}
+
+html {
+    font-size: 11px;
+}
+
+article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
+    display: block;
+    font-size: 16px!important;
+}
+
+.breadcrumb{
+    background-color: #F6F6F7 !important;
+}
+
+.ratings {
+    margin-right: 10px
+}
+
+.ratings i {
+    color: #cecece;
+    font-size: 32px
+}
+
+.rating-color {
+    color: #fbc634 !important
+}
+
+.review-count {
+    font-weight: 400;
+    margin-bottom: 2px;
+    font-size: 24px !important
+}
+
+.small-ratings i {
+    color: #cecece
+}
+
+.review-stat {
+    font-weight: 300;
+    font-size: 18px;
+    margin-bottom: 2px
+}
+
+.size-16 {
+    font-size: 16px!important;
+}
