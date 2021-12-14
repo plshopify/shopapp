@@ -96,21 +96,25 @@ const DetailComponent = ({ match }) => {
     toggleActive();
   }
 
-  const handleEffectChange = useCallback((value) => setEffect(value), []);
+  const handleEffectChange = useCallback((value) => { setEffect(value); setApplied(0); }, []);
   const toggleActive = useCallback(() => setActiveToast((toastactive) => !toastactive), []);
 
   const handleRangeSpeedSliderChange = useCallback(
-    (value) => setSpeedRangeValue(value),
+    (value) => { setSpeedRangeValue(value); setApplied(0); },
     [],
   );
 
+  const handleColor = useCallback(
+    (value) => { setColor(value); setApplied(0) },
+    [],
+  );
   const handleRangeFrequencyChange = useCallback(
-    (value) => setFrequencyRangeValue(value),
+    (value) => { setFrequencyRangeValue(value); setApplied(0); },
     [],
   );
 
   const handleFontChange = useCallback(
-    (value) => setFont(value),
+    (value) => { setFont(value); setApplied(0); },
     [],
   );
 
@@ -162,7 +166,7 @@ const DetailComponent = ({ match }) => {
                       <Label key={1}><span className="label">Change Effect</span></Label>
                       <Select key={2} options={options} onChange={handleEffectChange} value={effect} />
                       <Label key={3}><span className="label">Change Color</span></Label>
-                      <ColorPicker key={4} onChange={setColor} color={color} />
+                      <ColorPicker key={4} onChange={handleColor} color={color} />
                       <Label><span className="label">Change Font</span></Label>
                       <Select key={6} options={[
                         { label: 'Times New Roman', value: 'Times New Roman' },
