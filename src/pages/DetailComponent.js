@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   AppProvider, 
@@ -20,6 +20,7 @@ import {
   rgbString } from "@shopify/polaris";
 import { useCallback, useState } from "react";
 import ShopContext from '@app/contexts/ShopContext';
+import { PageLoading } from '@app/components/index';
 
 // import SmallBox from '../components/small-box/SmallBox';
 
@@ -40,16 +41,44 @@ const DetailComponent = ({ match }) => {
     saturation: 1,
     brightness: 1,
   });
+  const [themeData, setThemeData] = useState({});
   const [speedRangeValue, setSpeedRangeValue] = useState(32);
   const [frequencyRangeValue, setFrequencyRangeValue] = useState(40);
+  const [loading, setLoading] = useState(false);
   const [font, setFont] = useState('times');
   const { shop } = useContext(ShopContext);
+  const [applied, setApplied] = useState(0);
+
+  useEffect(() => {
+    const getThemeDetail = async () => {
+      setLoading(true);
+      const themesData = await fetch(`http://rdp3.servnet.com.pk/public/api/getThemeDetail/${id}?shop=${shop}`);
+      const response = await themesData.json();
+      setThemeData({
+        ...response.data
+      });
+      let shop_details = response.data.shop_details[0];
+      var rgb = shop_details.pivot.color.match(/\d+/g);
+      shop_details.pivot.color = rgbToHsb({
+        red: rgb[0],
+        green: rgb[1],
+        blue: rgb[2],
+        alpha: rgb[3]
+      });
+      setEffect(shop_details.pivot.effect);
+      setColor(shop_details.pivot.color);
+      setFont(shop_details.pivot.font_family);
+      setApplied(shop_details.pivot.applied);
+      setLoading(false);
+    }
+    getThemeDetail();
+  }, [match.params]);
 
   const applyClickHandler = async () => {
     const rgbaColor = rgbString(hsbToRgb(color));
     console.log(rgbaColor);
     setLoader(true);
-    const applyChanges = await fetch(`http://rdp3.servnet.com.pk/public/api/applyChanges`,{
+    const applyChanges = await fetch(`http://rdp3.servnet.com.pk/public/api/applyChanges/${id}`,{
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -58,10 +87,11 @@ const DetailComponent = ({ match }) => {
         shop: shop,
         sign: effect,
         color: rgbaColor,
-        font: font
+        font_family: font
       })
     });
     const response = applyChanges.json();
+    setApplied(1);
     setLoader(false);
     toggleActive();
   }
@@ -88,7 +118,7 @@ const DetailComponent = ({ match }) => {
     <Toast content="Changes saved!" onDismiss={toggleActive} />
   ) : null;
 
-  return <AppProvider>
+  return loading ? <PageLoading />  : <AppProvider>
     <Page fullWidth>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
@@ -98,7 +128,7 @@ const DetailComponent = ({ match }) => {
       </nav>
       <div className="row">
         <div className="col-4" key={1}>
-          <Heading>Theme Name</Heading>
+          <Heading>{themeData.theme_name} {applied ? '(Current)' : ''}</Heading>
           <div className="small-ratings">
             <i className="fa fa-star rating-color"></i>
             <i className="fa fa-star rating-color"></i>
@@ -109,7 +139,8 @@ const DetailComponent = ({ match }) => {
           </div>
         </div>
         <div className="col-8 text-right">
-          <Button onClick={applyClickHandler} {...(loader ? { loading: 'loading' } : { primary: 'primary' })} primary>Apply Theme</Button>
+          <Button onClick={applyClickHandler} {...(loader ? { loading: 'loading' } : { primary: 'primary' })} 
+          primary {...(applied ? {disabled: 'disabled'} : {primary: 'primary'})}>Apply Theme</Button>
         </div>
       </div>
       <div className="row mt-4">
@@ -119,7 +150,7 @@ const DetailComponent = ({ match }) => {
               <Card title="Overview" sectioned>
                 <Label><span className="label">1.0</span></Label>
                 <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis vel felis eu massa placerat tempus. Cras lacus leo, varius ut semper at, maximus quis ipsum. Vestibulum pretium erat sit amet risus mollis finibus. In at faucibus metus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nulla lobortis dictum nunc quis ultricies. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aliquam sit amet maximus nunc, nec porta enim. Phasellus dictum, velit non tempus pellentesque, ipsum purus aliquam massa, pellentesque commodo turpis eros quis dui. Sed sollicitudin est est, vitae elementum sapien sodales sed.
+                  {themeData.theme_description}
                 </p>
               </Card>
             </Layout.Section>

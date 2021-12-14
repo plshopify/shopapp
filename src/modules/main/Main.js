@@ -20,9 +20,14 @@ import ShopContext from '@app/contexts/ShopContext';
 
 const Main = () => {
     const search = useLocation().search;
+    const shop = new URLSearchParams(search).get('shop');
+    const type = new URLSearchParams(search).get('type');
     const shopContext = useMemo(() => ({
-        shop: new URLSearchParams(search).get('shop')
+        shop: shop
     }), []);
+    if(type == 'install') {
+        window.location.href = `${shop}/admin/apps/my-first-app-639`;
+    }
     const dispatch = useDispatch();
     const isSidebarMenuCollapsed = useSelector(
         (state) => state.ui.isSidebarMenuCollapsed
