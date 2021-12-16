@@ -1,23 +1,26 @@
 import React, { useContext, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  AppProvider, 
-  RangeSlider, 
-  Button, 
-  ColorPicker, 
-  Card, 
-  Form, 
-  FormLayout, 
-  Frame, 
-  Heading, 
-  Label, Layout, 
-  Page, 
-  Select, 
-  TextField, 
-  Toast, 
+import {
+  AppProvider,
+  RangeSlider,
+  Button,
+  ColorPicker,
+  Card,
+  Form,
+  FormLayout,
+  Frame,
+  Heading,
+  Label, Layout,
+  Page,
+  Select,
+  TextField,
+  Toast,
   hsbToRgb,
   rgbToHsb,
-  rgbString } from "@shopify/polaris";
+  rgbString,
+  Modal,
+  TextContainer
+} from "@shopify/polaris";
 import { useCallback, useState } from "react";
 import ShopContext from '@app/contexts/ShopContext';
 import { PageLoading } from '@app/components/index';
@@ -42,12 +45,18 @@ const DetailComponent = ({ match }) => {
     brightness: 1,
   });
   const [themeData, setThemeData] = useState({});
+  const [reviewsData, setReviewsData] = useState([]);
   const [speedRangeValue, setSpeedRangeValue] = useState(32);
   const [frequencyRangeValue, setFrequencyRangeValue] = useState(40);
   const [loading, setLoading] = useState(false);
   const [font, setFont] = useState('times');
   const { shop } = useContext(ShopContext);
   const [applied, setApplied] = useState(0);
+  const [reviewModalActive, setReviewModalActive] = useState(false);
+
+  const handleReviewChange = useCallback(() => setReviewModalActive(!reviewModalActive), [reviewModalActive]);
+
+  const reviewModalActivator = <Button onClick={handleReviewChange} primary>Write a Review</Button>;
 
   useEffect(() => {
     const getThemeDetail = async () => {
@@ -69,6 +78,9 @@ const DetailComponent = ({ match }) => {
       setColor(shop_details.pivot.color);
       setFont(shop_details.pivot.font_family);
       setApplied(shop_details.pivot.applied);
+      const reviewsData = await fetch(`http://rdp3.servnet.com.pk/public/api/getThemeReviews/${id}`);
+      const responseReview = await reviewsData.json();
+      setReviewsData(responseReview.data.shop_details_reviews);
       setLoading(false);
     }
     getThemeDetail();
@@ -78,7 +90,7 @@ const DetailComponent = ({ match }) => {
     const rgbaColor = rgbString(hsbToRgb(color));
     console.log(rgbaColor);
     setLoader(true);
-    const applyChanges = await fetch(`http://rdp3.servnet.com.pk/public/api/applyChanges/${id}`,{
+    const applyChanges = await fetch(`http://rdp3.servnet.com.pk/public/api/applyChanges/${id}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -122,7 +134,7 @@ const DetailComponent = ({ match }) => {
     <Toast content="Changes saved!" onDismiss={toggleActive} />
   ) : null;
 
-  return loading ? <PageLoading />  : <AppProvider>
+  return loading ? <PageLoading /> : <AppProvider>
     <Page fullWidth>
       <nav aria-label="breadcrumb">
         <ol className="breadcrumb">
@@ -137,14 +149,14 @@ const DetailComponent = ({ match }) => {
             <i className="fa fa-star rating-color"></i>
             <i className="fa fa-star rating-color"></i>
             <i className="fa fa-str rating-color"></i>
-            <i className="fa fa-star"></i> 
+            <i className="fa fa-star"></i>
             <i className="fa fa-star"></i>
             <span> 14 reviews | Number of users: 5</span>
           </div>
         </div>
         <div className="col-8 text-right">
-          <Button onClick={applyClickHandler} {...(loader ? { loading: 'loading' } : { primary: 'primary' })} 
-          primary {...(applied ? {disabled: 'disabled'} : {primary: 'primary'})}>Apply Theme</Button>
+          <Button onClick={applyClickHandler} {...(loader ? { loading: 'loading' } : { primary: 'primary' })}
+            primary {...(applied ? { disabled: 'disabled' } : { primary: 'primary' })}>Apply Theme</Button>
         </div>
       </div>
       <div className="row mt-4">
@@ -172,7 +184,7 @@ const DetailComponent = ({ match }) => {
                         { label: 'Times New Roman', value: 'Times New Roman' },
                         { label: 'Arial', value: 'Arial' },
                         { label: 'Comic Sans MS', value: 'Comic Sans MS' },
-                      ]} onChange={handleFontChange} value={font}/>
+                      ]} onChange={handleFontChange} value={font} />
                     </FormLayout>
                   </div>
                   <div className="col-4 offset-1">
@@ -199,55 +211,52 @@ const DetailComponent = ({ match }) => {
               <Card title="Reviews" sectioned>
                 <div className='row'>
                   <div className='col-12 text-right'>
-                    <button className='btn btn-primary size-16'>Write a review</button>
+                    <Modal
+                      activator={reviewModalActivator}
+                      open={reviewModalActive}
+                      onClose={handleReviewChange}
+                      title="Reach more shoppers with Instagram product tags"
+                      primaryAction={{
+                        content: 'Save',
+                        onAction: handleReviewChange,
+                      }}
+                      secondaryActions={[
+                        {
+                          content: 'Cancel',
+                          onAction: handleReviewChange,
+                        },
+                      ]}
+                    >
+                      <Modal.Section>
+                        <TextContainer>
+                          <Form>
+                            <FormLayout>
+                              <Label><span className="label">Rating</span></Label>
+                            </FormLayout>
+                          </Form>
+                        </TextContainer>
+                      </Modal.Section>
+                    </Modal>
                   </div>
                   <div className='col-12'>
                     <div className='row mt-5'>
-                      <div className='col-md-4'>
-                        <img src='/img/placeholder.png' className='img-responsive' height={250} width={250} />
-                        <div><label>Name:</label> Umer</div>
-                        <div><label>Date:</label> 02 December 2021</div>
-                        <div className="small-ratings">
-                          <i className="fa fa-star rating-color"></i>
-                          <i className="fa fa-star rating-color"></i>
-                          <i className="fa fa-star rating-color"></i>
-                          <i className="fa fa-star rating-color"></i> 
-                          <i className="fa fa-star"></i>
-                        </div>
-                        <div><p>
-                          Some description about the theme
+                      {reviewsData.map((value) => (
+                        <div className='col-md-4'>
+                          <img src='/img/placeholder.png' className='img-responsive' height={250} width={250} />
+                          <div><label>Name:</label> {value.shop_name}</div>
+                          <div><label>Date:</label> 02 December 2021</div>
+                          <div className="small-ratings">
+                            <i className={`fa fa-star ${(value.pivot.rating > 0) ? 'rating-color' : ''}`}></i>
+                            <i className={`fa fa-star ${(value.pivot.rating > 1) ? 'rating-color' : ''}`}></i>
+                            <i className={`fa fa-star ${(value.pivot.rating > 2) ? 'rating-color' : ''}`}></i>
+                            <i className={`fa fa-star ${(value.pivot.rating > 3) ? 'rating-color' : ''}`}></i>
+                            <i className={`fa fa-star ${(value.pivot.rating > 4) ? 'rating-color' : ''}`}></i>
+                          </div>
+                          <div><p>
+                            {value.pivot.review}
                           </p></div>
-                      </div>
-                      <div className='col-md-4'>
-                        <img src='/img/placeholder.png' className='img-responsive' height={250} width={250} />
-                        <div><label>Name:</label> Sohail</div>
-                        <div><label>Date:</label> 03 December 2021</div>
-                        <div className="small-ratings">
-                          <i className="fa fa-star rating-color"></i>
-                          <i className="fa fa-star rating-color"></i>
-                          <i className="fa fa-star"></i>
-                          <i className="fa fa-star"></i> 
-                          <i className="fa fa-star"></i>
                         </div>
-                        <div><p>
-                          Some description about the theme
-                          </p></div>
-                      </div>
-                      <div className='col-md-4'>
-                        <img src='/img/placeholder.png' className='img-responsive' height={250} width={250} />
-                        <div><label>Name:</label> Ali</div>
-                        <div><label>Date:</label> 04 December 2021</div>
-                        <div className="small-ratings">
-                          <i className="fa fa-star rating-color"></i>
-                          <i className="fa fa-star rating-color"></i>
-                          <i className="fa fa-star rating-color"></i>
-                          <i className="fa fa-star rating-color"></i> 
-                          <i className="fa fa-star rating-color"></i>
-                        </div>
-                        <div><p>
-                          Some description about the theme
-                          </p></div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -258,7 +267,7 @@ const DetailComponent = ({ match }) => {
       </div>
       <Frame>{toastMarkup}</Frame>
     </Page>
-    
+
   </AppProvider >
 }
 
