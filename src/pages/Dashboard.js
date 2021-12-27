@@ -41,7 +41,7 @@ const Dashboard = () => {
             <div className='row mt-5 text-center'>
               {themes.map((item) => (
                 <div className='col-md-4'>
-                  <Link to="/themedetails/1">
+                  <Link to={`/themedetails/${item.id}`}>
                     <img className='img-responsive' src={item.theme_image} width={290} height={270} />
                   </Link>
                   <div className="thumbTitle"><span>{item.theme_name}</span></div>

@@ -30,12 +30,13 @@ import { PageLoading } from '@app/components/index';
 
 const options = [
   { label: 'Falling Snow', value: '*' },
-  { label: 'Falling Rain', value: '!' },
+  { label: 'Falling Rain', value: '|' },
   { label: 'Falling Pumpkins', value: '🎃' },
 ];
 
 const DetailComponent = ({ match }) => {
   const { id } = match.params;
+  const { shop } = useContext(ShopContext);
   const [loader, setLoader] = useState(false);
   const [effect, setEffect] = useState('*');
   const [activeToast, setActiveToast] = useState(false);
@@ -50,13 +51,12 @@ const DetailComponent = ({ match }) => {
   const [frequencyRangeValue, setFrequencyRangeValue] = useState(40);
   const [loading, setLoading] = useState(false);
   const [font, setFont] = useState('times');
-  const { shop } = useContext(ShopContext);
   const [applied, setApplied] = useState(0);
   const [reviewModalActive, setReviewModalActive] = useState(false);
+  const [rating, setRating] = useState(1);
+  const [reviewText, setReviewText] = useState('');
+  const [complete, setComplete] = useState(false);
 
-  const handleReviewChange = useCallback(() => setReviewModalActive(!reviewModalActive), [reviewModalActive]);
-
-  const reviewModalActivator = <Button onClick={handleReviewChange} primary>Write a Review</Button>;
 
   useEffect(() => {
     const getThemeDetail = async () => {
@@ -84,7 +84,9 @@ const DetailComponent = ({ match }) => {
       setLoading(false);
     }
     getThemeDetail();
-  }, [match.params]);
+  }, [id, complete]);
+
+
 
   const applyClickHandler = async () => {
     const rgbaColor = rgbString(hsbToRgb(color));
@@ -108,6 +110,24 @@ const DetailComponent = ({ match }) => {
     toggleActive();
   }
 
+  const handleSaveReview = async () => {
+    let storeReview = await fetch(`http://rdp3.servnet.com.pk/public/api/storeReview`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        shop: shop,
+        theme_id: id,
+        rating: rating,
+        review: reviewText
+      })
+    });
+    const response = storeReview.json();
+    setComplete(!complete);
+    handleReviewChange();
+  }
+
   const handleEffectChange = useCallback((value) => { setEffect(value); setApplied(0); }, []);
   const toggleActive = useCallback(() => setActiveToast((toastactive) => !toastactive), []);
 
@@ -115,6 +135,12 @@ const DetailComponent = ({ match }) => {
     (value) => { setSpeedRangeValue(value); setApplied(0); },
     [],
   );
+
+  const handleReviewChange = useCallback(() => {
+    setReviewModalActive(!reviewModalActive);
+    setRating(1);
+    setReviewText('');
+  }, [reviewModalActive]);
 
   const handleColor = useCallback(
     (value) => { setColor(value); setApplied(0) },
@@ -129,6 +155,8 @@ const DetailComponent = ({ match }) => {
     (value) => { setFont(value); setApplied(0); },
     [],
   );
+
+  const reviewModalActivator = <Button onClick={handleReviewChange} primary>Write a Review</Button>;
 
   const toastMarkup = activeToast ? (
     <Toast content="Changes saved!" onDismiss={toggleActive} />
@@ -148,7 +176,7 @@ const DetailComponent = ({ match }) => {
           <div className="small-ratings">
             <i className="fa fa-star rating-color"></i>
             <i className="fa fa-star rating-color"></i>
-            <i className="fa fa-str rating-color"></i>
+            <i className="fa fa-star rating-color"></i>
             <i className="fa fa-star"></i>
             <i className="fa fa-star"></i>
             <span> 14 reviews | Number of users: 5</span>
@@ -215,10 +243,10 @@ const DetailComponent = ({ match }) => {
                       activator={reviewModalActivator}
                       open={reviewModalActive}
                       onClose={handleReviewChange}
-                      title="Reach more shoppers with Instagram product tags"
+                      title="Write a Review"
                       primaryAction={{
                         content: 'Save',
-                        onAction: handleReviewChange,
+                        onAction: handleSaveReview,
                       }}
                       secondaryActions={[
                         {
@@ -231,7 +259,21 @@ const DetailComponent = ({ match }) => {
                         <TextContainer>
                           <Form>
                             <FormLayout>
-                              <Label><span className="label">Rating</span></Label>
+                              <Label><span className="label">Give Rating</span></Label>
+                              <div className="small-ratings">
+                                <i className={`fa fa-star ${rating > 0 ? 'rating-color' : ''}`} onClick={() => setRating(1)}></i>
+                                <i className={`fa fa-star ${rating > 1 ? 'rating-color' : ''}`} onClick={() => setRating(2)}></i>
+                                <i className={`fa fa-star ${rating > 2 ? 'rating-color' : ''}`} onClick={() => setRating(3)}></i>
+                                <i className={`fa fa-star ${rating > 3 ? 'rating-color' : ''}`} onClick={() => setRating(4)}></i>
+                                <i className={`fa fa-star ${rating > 4 ? 'rating-color' : ''}`} onClick={() => setRating(5)}></i>
+                              </div>
+                              <Label><span className="label">Your Review</span></Label>
+                              <TextField
+                                value={reviewText}
+                                onChange={setReviewText}
+                                multiline={4}
+                                autoComplete="off"
+                              />
                             </FormLayout>
                           </Form>
                         </TextContainer>
