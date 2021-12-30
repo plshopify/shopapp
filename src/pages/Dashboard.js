@@ -4,6 +4,7 @@ import { DisplayText, AppProvider, Button, Card, Form, FormLayout, Frame, Headin
 import { SearchMinor } from '@shopify/polaris-icons';
 import ShopContext from '@app/contexts/ShopContext';
 import { PageLoading } from '@app/components/index';
+import APISettings from '@app/extras/APISettings';
 
 
 const Dashboard = () => {
@@ -15,7 +16,7 @@ const Dashboard = () => {
   useEffect(() => {
     const getThemes = async () => {
       setLoading(true);
-      const themesData = await fetch(`http://rdp3.servnet.com.pk/public/api/getThemes?shop=${shop}`);
+      const themesData = await fetch(`${APISettings.api_url}/api/getThemes?shop=${shop}`);
       const response = await themesData.json();
       setThemes(response.data);
       setLoading(false);

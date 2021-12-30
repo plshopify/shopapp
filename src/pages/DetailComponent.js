@@ -24,6 +24,7 @@ import {
 import { useCallback, useState } from "react";
 import ShopContext from '@app/contexts/ShopContext';
 import { PageLoading } from '@app/components/index';
+import APISettings from '@app/extras/APISettings';
 
 // import SmallBox from '../components/small-box/SmallBox';
 
@@ -61,7 +62,7 @@ const DetailComponent = ({ match }) => {
   useEffect(() => {
     const getThemeDetail = async () => {
       setLoading(true);
-      const themesData = await fetch(`http://rdp3.servnet.com.pk/public/api/getThemeDetail/${id}?shop=${shop}`);
+      const themesData = await fetch(`${APISettings.api_url}/api/getThemeDetail/${id}?shop=${shop}`);
       const response = await themesData.json();
       setThemeData({
         ...response.data
@@ -78,7 +79,7 @@ const DetailComponent = ({ match }) => {
       setColor(shop_details.pivot.color);
       setFont(shop_details.pivot.font_family);
       setApplied(shop_details.pivot.applied);
-      const reviewsData = await fetch(`http://rdp3.servnet.com.pk/public/api/getThemeReviews/${id}`);
+      const reviewsData = await fetch(`${APISettings.api_url}/api/getThemeReviews/${id}`);
       const responseReview = await reviewsData.json();
       setReviewsData(responseReview.data.shop_details_reviews);
       setLoading(false);
@@ -92,7 +93,7 @@ const DetailComponent = ({ match }) => {
     const rgbaColor = rgbString(hsbToRgb(color));
     console.log(rgbaColor);
     setLoader(true);
-    const applyChanges = await fetch(`http://rdp3.servnet.com.pk/public/api/applyChanges/${id}`, {
+    const applyChanges = await fetch(`${APISettings.api_url}/api/applyChanges/${id}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -111,7 +112,7 @@ const DetailComponent = ({ match }) => {
   }
 
   const handleSaveReview = async () => {
-    let storeReview = await fetch(`http://rdp3.servnet.com.pk/public/api/storeReview`, {
+    let storeReview = await fetch(`${APISettings.api_url}/api/storeReview`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
